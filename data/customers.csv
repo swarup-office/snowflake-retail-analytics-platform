@@ -1,0 +1,9 @@
+customer_id,first_name,last_name,email,phone,city,state,country,signup_date
+C001,Alice,Johnson,alice.johnson@email.com,555-0101,New York,NY,USA,2025-01-10
+C002,Bob,Smith,bob.smith@email.com,555-0102,Chicago,IL,USA,2025-02-15
+C003,Charlie,Brown,charlie.brown@email.com,555-0103,Los Angeles,CA,USA,2025-03-20
+C004,Diana,Lee,diana.lee@email.com,555-0104,Austin,TX,USA,2025-04-05
+C005,Evan,Wright,evan.wright@email.com,555-0105,San Francisco,CA,USA,2025-05-12
+C006,Fiona,Gallagher,fiona.g@email.com,555-0106,Houston,TX,USA,2025-06-18
+C007,George,Miller,george.miller@email.com,555-0107,Buffalo,NY,USA,2025-07-22
+C008,Hannah,Abbott,hannah.abbott@email.com,555-0108,Naperville,IL,USA,2025-08-30
