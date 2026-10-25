@@ -8,8 +8,8 @@ USE WAREHOUSE RETAIL_ANALYTICS_WH;
 USE DATABASE RETAIL_ANALYTICS;
 USE SCHEMA MARTS;
 
--- 1. Daily Sales Summary View
-CREATE OR REPLACE VIEW VW_DAILY_SALES AS
+-- 1. Daily Sales Summary View (Created as SECURE VIEW for sharing compatibility)
+CREATE OR REPLACE SECURE VIEW VW_DAILY_SALES AS
 SELECT
     DATE(o.order_timestamp) AS order_date,
     o.shipping_state,
@@ -25,7 +25,7 @@ JOIN RETAIL_ANALYTICS.CORE.DIM_PRODUCTS p
 GROUP BY 1, 2, 3;
 
 -- 2. Customer Lifetime Value (LTV) View
-CREATE OR REPLACE VIEW VW_CUSTOMER_LTV AS
+CREATE OR REPLACE SECURE VIEW VW_CUSTOMER_LTV AS
 SELECT
     c.customer_id,
     c.first_name,
