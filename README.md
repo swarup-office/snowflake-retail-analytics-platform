@@ -4,42 +4,39 @@ An end-to-end Snowflake data engineering and analytics platform implementing mul
 
 ---
 
-## 1. Architecture Overview
+## 1. Architecture & Data Flow
 
-```text
-       [ customers.csv / products.csv ]                [ orders.json ]
-                      |                                       |
-                      v                                       v
-         +-------------------------------------------------------------+
-         |                      INTERNAL STAGES                         |
-         |         @CUSTOMER_STAGE  |  @PRODUCT_STAGE  |  @ORDER_STAGE |
-         +-------------------------------------------------------------+
-                                       |
-                                       v (COPY INTO / Snowpipe)
-         +-------------------------------------------------------------+
-         |                    RETAIL_RAW DATABASE                      |
-         |         RAW_CUSTOMERS  |  RAW_PRODUCTS  |  RAW_ORDERS        |
-         +-------------------------------------------------------------+
-                                       |
-                       (Streams + Tasks / SQL MERGE & FLATTEN)
-                                       v
-         +-------------------------------------------------------------+
-         |                 RETAIL_ANALYTICS (CORE)                     |
-         |   DIM_CUSTOMERS  |  DIM_PRODUCTS  |  FACT_ORDERS  |  ITEMS   |
-         +-------------------------------------------------------------+
-                                       |
-                                       v
-         +-------------------------------------------------------------+
-         |                 RETAIL_ANALYTICS (MARTS)                    |
-         |  VW_DAILY_SALES | VW_CUSTOMER_LTV | HIGH_VALUE_CUSTOMERS    |
-         +-------------------------------------------------------------+
-                                       |
-             +-------------------------+-------------------------+
-             |                                                   |
-             v                                                   v
-   [ GOVERNANCE & ACCESS ]                              [ SECURE SHARING ]
-   - Masking Policy (PII)                               - RETAIL_PARTNER_SHARE
-   - Row Access Policy (State)                          - Zero-copy Dev Clone
+```mermaid
+flowchart TD
+    subgraph S1 [1. Source Files]
+        C[customers.csv]
+        P[products.csv]
+        O[orders.json]
+    end
+
+    subgraph S2 [2. Landing / Raw Zone: RETAIL_RAW]
+        STG[Internal Stages] --> RAW[Raw Tables: RAW_CUSTOMERS, RAW_PRODUCTS, RAW_ORDERS]
+    end
+
+    subgraph S3 [3. Core Dimensional Warehouse: RETAIL_ANALYTICS.CORE]
+        RAW -->|MERGE & Deduplicate| DIMS[DIM_CUSTOMERS, DIM_PRODUCTS]
+        RAW -->|Parse JSON & LATERAL FLATTEN| FACTS[FACT_ORDERS, FACT_ORDER_ITEMS]
+    end
+
+    subgraph S4 [4. Business Marts: RETAIL_ANALYTICS.MARTS]
+        FACTS --> V1[VW_DAILY_SALES]
+        DIMS --> V2[VW_CUSTOMER_LTV]
+        FACTS --> V2
+        FACTS --> SP[Snowpark: HIGH_VALUE_CUSTOMERS]
+    end
+
+    subgraph S5 [5. Governance, Security & Sharing]
+        V1 --> SH[Data Share: RETAIL_PARTNER_SHARE]
+        DIMS -.-> MASK[Dynamic Masking: Email/Phone]
+        FACTS -.-> RAP[Row Access Policy: Region Access]
+    end
+
+    S1 --> S2
 ```
 
 ---
