@@ -138,21 +138,25 @@ INSERT INTO FACT_ORDERS (
     created_at
 )
 SELECT
-    order_data:order_id::STRING,
-    order_data:customer_id::STRING,
-    order_data:order_timestamp::TIMESTAMP_NTZ,
-    order_data:payment_method::STRING,
-    order_data:shipping_address.city::STRING,
-    order_data:shipping_address.state::STRING,
-    order_data:shipping_address.country::STRING,
-    (
-        SELECT SUM(
-            item.value:quantity::NUMBER * item.value:unit_price::NUMBER(12,2)
-        )
-        FROM TABLE(FLATTEN(input => order_data:items)) item
-    ) AS order_total,
-    CURRENT_TIMESTAMP()
-FROM RETAIL_RAW.LANDING.RAW_ORDERS;
+    r.order_data:order_id::STRING AS order_id,
+    r.order_data:customer_id::STRING AS customer_id,
+    r.order_data:order_timestamp::TIMESTAMP_NTZ AS order_timestamp,
+    r.order_data:payment_method::STRING AS payment_method,
+    r.order_data:shipping_address.city::STRING AS shipping_city,
+    r.order_data:shipping_address.state::STRING AS shipping_state,
+    r.order_data:shipping_address.country::STRING AS shipping_country,
+    SUM(f.value:quantity::NUMBER * f.value:unit_price::NUMBER(12,2)) AS order_total,
+    CURRENT_TIMESTAMP() AS created_at
+FROM RETAIL_RAW.LANDING.RAW_ORDERS r,
+LATERAL FLATTEN(input => r.order_data:items) f
+GROUP BY
+    r.order_data:order_id::STRING,
+    r.order_data:customer_id::STRING,
+    r.order_data:order_timestamp::TIMESTAMP_NTZ,
+    r.order_data:payment_method::STRING,
+    r.order_data:shipping_address.city::STRING,
+    r.order_data:shipping_address.state::STRING,
+    r.order_data:shipping_address.country::STRING;
 
 -- 6. Parse and Flatten Nested Items into FACT_ORDER_ITEMS
 INSERT INTO FACT_ORDER_ITEMS (
